@@ -102,17 +102,13 @@ const ArticleSchema = mongoose.Schema(
       default: Date.now
     } ,
 
-    sequence: {
+    // Slider fix BAnner
+    fixedPosition: {
       type: Number,
-      default: null,
-      validate: {
-        validator: function (v) {
-          return v === null || (v >= 1 && v <= 2);
-        },
-        message: 'Sequence must be either 1 or 2'
-      }
+      enum: [1, 2], // Only allow positions 1 or 2
+      unique: true, // Ensure only one article per position
+      sparse: true  // Allows null values for non-fixed articles
     },
-
   },
   {
     timestamps: true,

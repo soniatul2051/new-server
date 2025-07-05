@@ -14,17 +14,37 @@ connectDB();
 
 const app = express();
 
-// Essential middleware should come first
-app.use(express.json());
-app.use(
-  cors({
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-  })
-);
+// Configure CORS based on environment
+const corsOptions = {
+  origin: (origin, callback) => {
+    const allowedOrigins = [
+      "https://alishempiresalon.com",
+      "https://www.alishempiresalon.com",
+      "https://admin.alishempiresalon.com",
+      "http://localhost:5174",
+      "http://localhost:5173"
+    ];
+    
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.ENV === "development") {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+  optionsSuccessStatus: 200 // For legacy browser support
+};
 
+// Essential middleware
+app.use(express.json());
+app.use(cors(corsOptions));
+
+// Logging middleware
 if (process.env.ENV === "development") {
   app.use(morgan("dev"));
 }
@@ -44,10 +64,29 @@ app.get("/", (req, res) => {
   );
 });
 
-// Error handling middleware (recommended)
+// Health check route
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "healthy" });
+});
+
+// Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).send('Something broke!');
+  
+  if (err.message === "Not allowed by CORS") {
+    return res.status(403).json({ error: "CORS policy: Request not allowed" });
+  }
+  
+  res.status(500).json({ 
+    error: 'Something broke!',
+    message: err.message,
+    stack: process.env.ENV === "development" ? err.stack : undefined
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: "Route not found" });
 });
 
 // Start server

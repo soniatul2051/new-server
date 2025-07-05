@@ -28,17 +28,18 @@ import {
   adminGetArticle,
   answerReportArticle,
   approvedArticle,
+  clearFixedPosition,
   createSubCategory,
   dashBoardBreakingNews,
   dashBoardCategoryArticles,
   dashBoardTopStories,
   dashBoardUpload,
   getArticle,
+  getFixedPositionArticles,
   getSubCategory,
   imageUpload,
+  setFixedPosition,
   shareUrl,
-  resetArticlePositions,
-  updateArticleSequence
 } from "../Controllers/ArticleController.js";
 import { upload } from "../middleware/index.js";
 import {
@@ -117,13 +118,12 @@ route.route("/register").put(changeRegister);
 route.route("/user").get(getUser).delete(DeleteUser);
 route.route("/article").get(getArticle).delete(DeleteArticle);
 route.route("/article/:id").put(approvedArticle).post(PostArticle);
-route.route("/article/reset-positions").put(resetArticlePositions);
-route.route("/article/update-sequence").put(updateArticleSequence);
-// route.route("/article").get(getArticle).delete(DeleteArticle);
-
-// Slider Reset Api Babloo 28-06
-// PUT /article/reset-positions
 route.route("/shareUrl").get(shareUrl);
+
+// Slider Fix Babloo 
+route.route("/article/fixed/clear").put(clearFixedPosition);
+route.route("/article/fixed/set").put(setFixedPosition);
+route.route("/article/fixed").get(getFixedPositionArticles);
 
 route.route("/story").post(createStory);
 route.route("/story").get(getAllStories).delete(DeleteStory);
